@@ -7,7 +7,8 @@ module Linguist
     GIT_ATTR = ['linguist-documentation',
                 'linguist-language',
                 'linguist-vendored',
-                'linguist-generated']
+                'linguist-generated',
+                'linguist-detectable']
 
     GIT_ATTR_OPTS = { :priority => [:index], :skip_system => true }
     GIT_ATTR_FLAGS = Rugged::Repository::Attributes.parse_opts(GIT_ATTR_OPTS)
@@ -37,24 +38,24 @@ module Linguist
     end
 
     def documentation?
-      if attr = git_attributes['linguist-documentation']
-        boolean_attribute(attr)
+      if not git_attributes['linguist-documentation'].nil?
+        boolean_attribute(git_attributes['linguist-documentation'])
       else
         super
       end
     end
 
     def generated?
-      if attr = git_attributes['linguist-generated']
-        boolean_attribute(attr)
+      if not git_attributes['linguist-generated'].nil?
+        boolean_attribute(git_attributes['linguist-generated'])
       else
         super
       end
     end
 
     def vendored?
-      if attr = git_attributes['linguist-vendored']
-        return boolean_attribute(attr)
+      if not git_attributes['linguist-vendored'].nil?
+        boolean_attribute(git_attributes['linguist-vendored'])
       else
         super
       end
@@ -70,6 +71,14 @@ module Linguist
       end
     end
 
+    def detectable?
+      if not git_attributes['linguist-detectable'].nil?
+        boolean_attribute(git_attributes['linguist-detectable'])
+      else
+        nil
+      end
+    end
+
     def data
       load_blob!
       @data
@@ -80,15 +89,20 @@ module Linguist
       @size
     end
 
+    def symlink?
+      # We don't create LazyBlobs for symlinks.
+      false
+    end
+
     def cleanup!
       @data.clear if @data
     end
 
     protected
 
-    # Returns true if the attribute is present and not the string "false".
+    # Returns true if the attribute is present and not the string "false" and not the false boolean.
     def boolean_attribute(attribute)
-      attribute != "false"
+      attribute != "false" && attribute != false
     end
 
     def load_blob!

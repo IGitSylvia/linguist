@@ -1,8 +1,7 @@
 require "bundler/setup"
 require "minitest/autorun"
-require "mocha/setup"
+require "mocha/minitest"
 require "linguist"
-require 'color-proximity'
 require "linguist/blob"
 require 'licensee'
 
@@ -17,7 +16,7 @@ end
 
 def fixture_blob_memory(name)
   filepath = (name =~ /^\//)? name : File.join(fixtures_path, name)
-  content = File.read(filepath)
+  content = File.read(filepath, :encoding => "ASCII-8BIT")
   Linguist::Blob.new(name, content)
 end
 
@@ -32,6 +31,14 @@ end
 
 def sample_blob_memory(name)
   filepath = (name =~ /^\//)? name : File.join(samples_path, name)
-  content = File.read(filepath)
+  content = File.read(filepath, :encoding => "ASCII-8BIT")
   Linguist::Blob.new(name, content)
+end
+
+def silence_warnings
+  original_verbosity = $VERBOSE
+  $VERBOSE = nil
+  yield
+ensure
+  $VERBOSE = original_verbosity
 end
